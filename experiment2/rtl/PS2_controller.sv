@@ -36,7 +36,7 @@ logic [7:0] PS2_shift_reg;
 logic [2:0] PS2_bit_count;
 logic PS2_parity;
 
-assign PS2_make_code = 1'b1;
+//assign PS2_make_code = 1'b1;
 
 always_ff @ (posedge Clock_50 or negedge Resetn) begin
 	if (Resetn == 1'b0) begin
@@ -82,6 +82,12 @@ always_ff @ (posedge Clock_50 or negedge Resetn) begin
 			S_PS2_STOP: begin
 				if (PS2_data == 1'b1) begin
 					// Stop bit detected
+					if (PS2_code== 8'hF0 || PS2_shift_reg == 8'hF0) begin
+						PS2_make_code = 1'b0;
+					end
+					else begin
+						PS2_make_code = 1'b1;
+					end
 					PS2_code <= PS2_shift_reg;
 					PS2_code_ready <= 1'b1;
 				end

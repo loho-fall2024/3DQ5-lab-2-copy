@@ -167,42 +167,26 @@ always_comb begin
 
 	0:  LCD_data_sequence	=	9'h080; // Set starting position to 0
 	//	Line 1
-	1:	LCD_data_sequence	=	9'h157; // W
-	2:	LCD_data_sequence	=	9'h165; // e
-	3:	LCD_data_sequence	=	9'h16C; // l
-	4:	LCD_data_sequence	=	9'h163; // c
-	5:	LCD_data_sequence	=	9'h16F; // o
-	6:	LCD_data_sequence	=	9'h16D; // m
-	7:	LCD_data_sequence	=	9'h165; // e
-	8:	LCD_data_sequence	=	9'h120; //
-	9:	LCD_data_sequence	=	9'h174; // t
-	10:	LCD_data_sequence	=	9'h16F; // o
-	11:	LCD_data_sequence	=	9'h120; //
-	12:	LCD_data_sequence	=	9'h133; // 3
-	13:	LCD_data_sequence	=	9'h144; // D
-	14:	LCD_data_sequence	=	9'h151; // Q
-	15:	LCD_data_sequence	=	9'h135; // 5
-	16:	LCD_data_sequence	=	9'h120; //
-	//	Change Line
-	17:	LCD_data_sequence	=	9'h0C0;
-	//	Line 2
-	18:	LCD_data_sequence	=	9'h14C; // L
-	19:	LCD_data_sequence	=	9'h161; // a
-	20:	LCD_data_sequence	=	9'h162; // b
-	21:	LCD_data_sequence	=	9'h12E; // .
-	22:	LCD_data_sequence	=	9'h132; // 2
-	23:	LCD_data_sequence	=	9'h120; //
-	24:	LCD_data_sequence	=	9'h145; // E
-	25:	LCD_data_sequence	=	9'h178; // x
-	26:	LCD_data_sequence	=	9'h170; // p
-	27:	LCD_data_sequence	=	9'h12e; // .
-	28:	LCD_data_sequence	=	9'h133; // 3
-	29:	LCD_data_sequence	=	9'h13A; // :
-	30:	LCD_data_sequence	=	9'h120; //
-	31:	LCD_data_sequence	=	9'h14C; // L
-	32:	LCD_data_sequence	=	9'h143; // C
-//	33:	LCD_data_sequence	=	9'h144; // D
-	default:	LCD_data_sequence	=	9'h144;
+	1:	LCD_data_sequence	=	9'h147; // G
+	2:	LCD_data_sequence	=	9'h172; // r
+	3:	LCD_data_sequence	=	9'h16F; // o
+	4:	LCD_data_sequence	=	9'h175; // u
+	5:	LCD_data_sequence	=	9'h170; // p
+	6:	LCD_data_sequence	=	9'h12D; // -
+	7:	LCD_data_sequence	=	9'h134; // 4
+	8:	LCD_data_sequence	=	9'h131; // 1
+	9:	LCD_data_sequence	=	9'h0C0; // change line
+	10:	LCD_data_sequence	=	9'h157; // W
+	11:	LCD_data_sequence	=	9'h165; // e
+	12:	LCD_data_sequence	=	9'h164; // d
+	13:	LCD_data_sequence	=	9'h16E; // n
+	14:	LCD_data_sequence	=	9'h165; // e
+	15:	LCD_data_sequence	=	9'h173; // s
+	16:	LCD_data_sequence	=	9'h164; // d
+	17:	LCD_data_sequence	=	9'h161; // a
+	18:	LCD_data_sequence	=	9'h179; // y
+
+	default:	LCD_data_sequence	=	9'h120;
 	endcase
 end
 
