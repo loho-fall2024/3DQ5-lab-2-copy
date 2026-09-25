@@ -56,7 +56,7 @@ enum logic [3:0] {
 
 logic [3:0] data_counter;
 
-logic [7:0] data_reg [15:0];
+logic [8:0] data_reg [15:0];
 
 logic [7:0] PS2_code;
 logic PS2_code_ready, PS2_code_ready_buf;
@@ -69,9 +69,11 @@ logic [7:0] LCD_code;
 logic [3:0] LCD_position;
 logic LCD_line;
 logic caps; //0 lowercase, 1 uppercase
-logic [1:0] char_type[0:1]; //0 is letter, 1 is number, 2 is space
+logic [1:0] char_type; //0 is letter, 1 is number, 2 is space
 logic [1:0] prev_type;
 logic [3:0] pair_count;
+logic show_count;
+//assign show_count =1'b0;
 
 logic LCD_start;
 logic LCD_done;
@@ -95,7 +97,7 @@ PS2_controller PS2_unit (
 
 // ROM for translate PS2 code to LCD code
 PS2_to_LCD_ROM	PS2_to_LCD_ROM_inst (
-	.address ( {caps, data_reg[15]} ),
+	.address ( data_reg[15] ),
 	.clock ( CLOCK_50_I ),
 	.q ( LCD_code)
 	);
@@ -148,9 +150,10 @@ always_ff @ (posedge CLOCK_50_I or negedge resetn) begin
 		data_reg[1] <= 8'h00;
 		data_reg[0] <= 8'h00;	
 		caps <=1'd0;
-		char_type[0] <=2'd2;
+		char_type <=2'd2;
 		prev_type <= 2'd2;
 		pair_count <= 4'd0;
+		show_count <=1'b0;
 	end else begin
 		PS2_code_ready_buf <= PS2_code_ready;		
 
@@ -185,26 +188,37 @@ always_ff @ (posedge CLOCK_50_I or negedge resetn) begin
 		end
 		S_IDLE: begin
 			// Scan code is detected
-			
-			if (PS2_code == 8'h12) begin
-				caps <=1'd1;
-			end else if (PS2_code == 8'h59) begin
-				caps <=1'd0;
+			if (PS2_code_ready && ~PS2_code_ready_buf && PS2_make_code == 1'b1) begin
+				if (PS2_code == 8'h12) begin
+					caps <=1'd1;
+				end else if (PS2_code == 8'h59) begin
+					caps <=1'd0;
+				end
 			end
 			
 			if (PS2_code_ready && ~PS2_code_ready_buf && PS2_make_code == 1'b1&& ~(PS2_code == 8'h12) && ~(PS2_code == 8'h59)) begin
 				if (PS2_code == 8'h16 ||PS2_code == 8'h1E || PS2_code == 8'h26||PS2_code == 8'h25 ||PS2_code == 8'h2E|| PS2_code == 8'h36 ||PS2_code == 8'h3D ||PS2_code == 8'h3E||PS2_code == 8'h46 || PS2_code == 8'h45) begin
-					char_type[0] <=2'b1;
-			//		if (prev_type ==2'd1)
-			//			pair_count <= pair_count+4'd1;
+					char_type <=2'b1;
+					if (prev_type ==2'd0 && LCD_line == 1'd0)
+						pair_count <= pair_count+4'd1;
+					
+					prev_type <=2'd1;
 				end else if (PS2_code == 8'h1C ||PS2_code == 8'h1B || PS2_code == 8'h23||PS2_code == 8'h2B ||PS2_code == 8'h34|| PS2_code == 8'h33 ||PS2_code == 8'h3B ||
 								PS2_code == 8'h42 ||PS2_code == 8'h4B || PS2_code == 8'h1A||PS2_code == 8'h22 ||PS2_code == 8'h15|| PS2_code == 8'h1D ||PS2_code == 8'h24 ||
 								PS2_code == 8'h2D ||PS2_code == 8'h2C || PS2_code == 8'h35||PS2_code == 8'h3C ||PS2_code == 8'h43|| PS2_code == 8'h44 ||PS2_code == 8'h4D ||
 								PS2_code == 8'h21 ||PS2_code == 8'h2A || PS2_code == 8'h32||PS2_code == 8'h31 ||PS2_code == 8'h3A) begin
-					char_type[0] <=2'b0;
+					if (prev_type ==2'd1 && LCD_line == 1'd1)
+						pair_count <= pair_count+4'd1;
+					char_type <=2'b0;
+					prev_type <=2'd0;
 				end
 				else begin
-					char_type[0] <=2'd2;
+					char_type <=2'd2;
+					prev_type <=2'd2;
+				end
+				if (data_counter == 4'd0) begin
+					 pair_count <= 4'd0;
+					 show_count <=1'b0;
 				end
 				if (data_counter < 4'd15) begin
 					data_counter <= data_counter + 4'd1;
@@ -229,7 +243,7 @@ always_ff @ (posedge CLOCK_50_I or negedge resetn) begin
 				data_reg[3] <= data_reg[2];
 				data_reg[2] <= data_reg[1];
 				data_reg[1] <= data_reg[0];
-				data_reg[0] <= PS2_code;
+				data_reg[0] <= {caps, PS2_code};
 			end
 		end
 		S_LCD_WAIT_ROM_UPDATE: begin
@@ -301,7 +315,7 @@ always_ff @ (posedge CLOCK_50_I or negedge resetn) begin
 					end else begin
 						// finish displaying
 						data_counter <= 4'd0;
-						
+						show_count <=1'b1;
 						state <= S_IDLE;
 					end
 				end
@@ -335,16 +349,16 @@ convert_hex_to_seven_segment unit2 (
 );
 
 convert_hex_to_seven_segment unit1 (
-	.hex_value(PS2_code[7:4]), 
+	.hex_value(char_type), 
 	.converted_value(value_7_segment[1])
 );
 
 convert_hex_to_seven_segment unit0 (
-	.hex_value({2'b00,char_type[0]}), 
+	.hex_value(pair_count), 
 	.converted_value(value_7_segment[0])
 );
 
-assign	SEVEN_SEGMENT_N_O[0] = value_7_segment[0],
+assign	SEVEN_SEGMENT_N_O[0] = value_7_segment[0], //show_count ? value_7_segment[0] :7'h7f
 		SEVEN_SEGMENT_N_O[1] = value_7_segment[1],
 		SEVEN_SEGMENT_N_O[2] = 7'h7f,
 		SEVEN_SEGMENT_N_O[3] = 7'h7f,
